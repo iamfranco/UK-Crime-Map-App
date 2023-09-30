@@ -3,5 +3,5 @@ import { CoordinateConversionService } from "../services/coordinateConversionSer
 import { PoliceApiService } from "../services/policeApiService/policeApiService";
 
 const policeApiClient = new PoliceApiClient();
-const coordinateConversionService = new CoordinateConversionService();
+export const coordinateConversionService = new CoordinateConversionService();
 export const policeApiService = new PoliceApiService(policeApiClient, coordinateConversionService);
