@@ -1,25 +1,23 @@
+import { useState } from 'react'
 import './App.css'
-import { PoliceApiClient } from './clients/policeApiClient/policeApiClient';
+import { policeApiService } from './IoC/serviceProvider';
 import { Coordinate } from './models/Coordinate';
-import { CoordinateConversionService } from './services/coordinateConversionService/coordinateConversionService';
-import { PoliceApiService } from './services/policeApiService/policeApiService';
 
 function App() {
-  const policeApiClient = new PoliceApiClient();
-  const coordinateConversionService = new CoordinateConversionService();
-  const policeApiService = new PoliceApiService(policeApiClient, coordinateConversionService);
+  const [address, setAddress] = useState<string>('53.483959, -2.244644');
 
   const handleClick = async () => {
-    const coordinate: Coordinate = {lat: 53.483959, lon: -2.244644};
-    const squareLengthMetres = 1000;
-    const date = '2023-01';
-    const result = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, squareLengthMetres, date);
-    console.log(result);
+    const [lat, lon] = address.split(',').map(x => parseFloat(x.trim()));
+    const coordinate: Coordinate = {lat: lat, lon: lon};
+    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-01');
+    console.log(res);
+    
   }
 
   return (
     <>
-      <button onClick={handleClick}>Get Street Crimes</button>
+      <input type="text" id='addressField' data-testid="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+      <div id='searchButton' data-testid="searchButton" onClick={handleClick}>Search</div>
     </>
   )
 }
