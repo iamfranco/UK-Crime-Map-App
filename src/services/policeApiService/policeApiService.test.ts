@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import { Coordinate, makeRandomCoordinate } from "../../models/Coordinate";
 import { PoliceApiService } from "./policeApiService";
 import { PoliceApiClient } from "../../clients/policeApiClient/policeApiClient";
 import { CoordinateConversionService } from "../coordinateConversionService/coordinateConversionService";
@@ -12,11 +11,11 @@ describe('PoliceApiService', () => {
 
   it('getStreetCrimesAroundCoordinate calls policeApiClient.getStreetCrimes and returns results', async () => {
     //Arrange
-    const coordinate : Coordinate = {lat: 0, lon: 0};
+    const coordinate : [number, number] = [0, 0];
     const squareLengthMetres = 100;
     const date = '2023-01';
 
-    const polygon = [1, 2, 3].map(() => makeRandomCoordinate());
+    const polygon: [number, number][] = [1, 2, 3].map(() => [Math.random(), Math.random()]);
     const streetCrimes = [1, 2, 3, 4].map(() => makeRandomStreetCrime());
     
     const getBoundingSquareLatLonPolygonSpy = vi.spyOn(coordinateConversionService, 'getBoundingSquareLatLonPolygon');

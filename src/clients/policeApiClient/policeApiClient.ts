@@ -1,9 +1,8 @@
-import { Coordinate } from "../../models/Coordinate";
 import { CrimeCategory } from "./models/CrimeCategory";
 import { StreetCrime } from "./models/StreetCrime";
 
-const getStreetCrimes = async (polygon: Coordinate[], date: string) : Promise<StreetCrime[]>  => {
-  const poly = polygon.map(p => `${p.lat},${p.lon}`).join(':');
+const getStreetCrimes = async (polygon: [number, number][], date: string) : Promise<StreetCrime[]>  => {
+  const poly = polygon.map(p => `${p[0]},${p[1]}`).join(':');
   const url = `https://data.police.uk/api/crimes-street/all-crime?poly=${poly}&date=${date}`;
 
   let response = await fetch(url);
@@ -18,6 +17,6 @@ const getCrimeCategories = async () : Promise<CrimeCategory[]> => {
 }
 
 export class PoliceApiClient {
-  getStreetCrimes: (polygon: Coordinate[], date: string) => Promise<StreetCrime[]> = getStreetCrimes
+  getStreetCrimes: (polygon: [number, number][], date: string) => Promise<StreetCrime[]> = getStreetCrimes
   getCrimeCategories: () => Promise<CrimeCategory[]> = getCrimeCategories
 }

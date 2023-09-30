@@ -1,15 +1,14 @@
-import { describe, expect, it } from 'vitest'; 
-import { Coordinate } from '../../models/Coordinate';
+import { describe, expect, it } from 'vitest';
 import { PoliceApiClient } from './policeApiClient';
 
 describe('PoliceApiClient', () => {
   const subject = new PoliceApiClient();
 
   it('getStreetCrimes', async () => {
-    const poly: Coordinate[] = [
-      {lat: 52.268, lon: 0.543}, 
-      {lat: 52.794, lon: 0.238}, 
-      {lat: 52.130, lon: 0.478}
+    const poly: [number, number][] = [
+      [52.268, 0.543], 
+      [52.794, 0.238], 
+      [52.130, 0.478]
     ]
     const date = '2021-02';
     const result = await subject.getStreetCrimes(poly, date);

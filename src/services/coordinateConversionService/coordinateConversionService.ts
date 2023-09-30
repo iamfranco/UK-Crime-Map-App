@@ -1,5 +1,3 @@
-import { Coordinate } from "../../models/Coordinate";
-
 const latMeanToMetrePerLatLon = (latMean: number) : {mPerLat: number, mPerLon: number} => {
   const latMeanRadians = latMean * Math.PI / 180;
   const mPerLat = 111132.92 - 559.82*Math.cos(2*latMeanRadians) + 1.175*Math.cos(4*latMeanRadians) - 0.0023*Math.cos(6*latMeanRadians);
@@ -8,19 +6,19 @@ const latMeanToMetrePerLatLon = (latMean: number) : {mPerLat: number, mPerLon: n
   return {mPerLat: mPerLat, mPerLon: mPerLon};
 }
 
-const getBoundingSquareLatLonPolygon = (coordinate: Coordinate, squareLengthMetres: number) : Coordinate[] => {
-  const {mPerLat, mPerLon} = latMeanToMetrePerLatLon(coordinate.lat);
+const getBoundingSquareLatLonPolygon = (coordinate: [number, number], squareLengthMetres: number) : [number, number][] => {
+  const {mPerLat, mPerLon} = latMeanToMetrePerLatLon(coordinate[0]);
 
-  const latMax = coordinate.lat + squareLengthMetres / 2 / mPerLat;
-  const latMin = coordinate.lat - squareLengthMetres / 2 / mPerLat;
-  const lonMax = coordinate.lon + squareLengthMetres / 2 / mPerLon;
-  const lonMin = coordinate.lon - squareLengthMetres / 2 / mPerLon;
+  const latMax = coordinate[0] + squareLengthMetres / 2 / mPerLat;
+  const latMin = coordinate[0] - squareLengthMetres / 2 / mPerLat;
+  const lonMax = coordinate[1] + squareLengthMetres / 2 / mPerLon;
+  const lonMin = coordinate[1] - squareLengthMetres / 2 / mPerLon;
 
   return [
-    {lat: latMax, lon: lonMin},
-    {lat: latMax, lon: lonMax},
-    {lat: latMin, lon: lonMax},
-    {lat: latMin, lon: lonMin},
+    [latMax, lonMin],
+    [latMax, lonMax],
+    [latMin, lonMax],
+    [latMin, lonMin]
   ]
 }
 
