@@ -1,19 +1,11 @@
-import { useState } from 'react'
 import './App.css'
-import { coordinateConversionService, policeApiService } from './IoC/serviceProvider';
+import { coordinateConversionService } from './IoC/serviceProvider';
 import { MapContainer, Marker, Polygon, Popup, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import AddressProvider from './contexts/AddressProvider';
+import SearchInputs from './components/search-inputs/SearchInputs';
 
 function App() {
-  const [address, setAddress] = useState<string>('53.483959, -2.244644');
-
-  const handleClick = async () => {
-    const [lat, lon] = address.split(',').map(x => parseFloat(x.trim()));
-    const coordinate: [number, number]= [lat, lon];
-    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-01');
-    console.log(res);
-  }
-
   const position: [number, number] = [53.483959, -2.244644];
 
   const polygon: [number, number][] = coordinateConversionService
@@ -22,10 +14,9 @@ function App() {
   const purpleOptions = { color: 'purple' };
 
   return (
-    <>
-      <input type="text" id='addressField' data-testid="address" value={address} onChange={(e) => setAddress(e.target.value)} />
-      <div id='searchButton' data-testid="searchButton" onClick={handleClick}>Search</div>
-      
+    <AddressProvider>
+      <SearchInputs />
+
       <MapContainer center={position} zoom={16}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -38,7 +29,7 @@ function App() {
           </Popup>
         </Marker>
       </MapContainer>
-    </>
+    </AddressProvider>
   )
 }
 
