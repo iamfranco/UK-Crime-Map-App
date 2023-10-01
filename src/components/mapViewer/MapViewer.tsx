@@ -1,5 +1,5 @@
 import { Circle, MapContainer, Marker, Polygon, Popup, TileLayer, useMap } from 'react-leaflet'
-import { coordinateConversionService } from '../../IoC/serviceProvider';
+import { circleGroupUtils, coordinateConversionService } from '../../IoC/serviceProvider';
 import { useContext, useEffect } from 'react';
 import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
 import { AddressContext } from '../../contexts/AddressProvider';
@@ -50,15 +50,26 @@ const MapAnnotations = () => {
     streetCrimesGroupedByLatLon[matchingIndex].push(s);
   }
 
+  const dotRadius = 6;
+  const colorMapping : {[id: string] : string} = {
+    'public-order': '#555',
+    'shoplifting': '#f82',
+    'theft-from-the-person': '#f50',
+    'violent-crime': '#f00'
+  }
+
   const circles = streetCrimesGroupedByLatLon.map(x => {
-    const circlesGroup = x.map((y) => {
+    const circlesGroup = x.map((y, index) => {
       const lat = parseFloat(y.location.latitude);
       const lon = parseFloat(y.location.longitude);
+      const positionOffset = circleGroupUtils.dotIndex2DotPosition(index, dotRadius);
+      const {mPerLat, mPerLon} = coordinateConversionService.latMeanToMetrePerLatLon(lat);
 
-      const position : [number, number] = [lat, lon]
+      const position : [number, number] = [lat + positionOffset[1] / mPerLat, lon + positionOffset[0] / mPerLon]
+      const color = colorMapping[y.category];
 
       return (
-        <Circle key={`${y.id}-${y.category}`} center={position} radius={10} />
+        <Circle key={`${y.id}-${y.category}`} center={position} radius={dotRadius} color={color} fillOpacity={0.5} />
       )
     })
 

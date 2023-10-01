@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { policeApiService } from '../../IoC/serviceProvider';
 import { AddressContext } from '../../contexts/AddressProvider';
 import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
@@ -8,14 +8,22 @@ const SearchInputs = () => {
   const {setStreetCrimes} = useContext(StreetCrimesContext);
   const [tempAddress, setTempAddress] = useState<string>(defaultAddress);
 
-  const handleClick = async () => {
-    setAddress(tempAddress);
-    const [lat, lon] = tempAddress.split(',').map(x => parseFloat(x.trim()));
+  const fetchStreetCrimes = async (address: string) => {
+    const [lat, lon] = address.split(',').map(x => parseFloat(x.trim()));
     const coordinate: [number, number]= [lat, lon];
-    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-05');
+    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-06');
     setStreetCrimes(res);
     console.log(res);
   }
+
+  const handleClick = async () => {
+    setAddress(tempAddress);
+    fetchStreetCrimes(tempAddress);
+  }
+
+  useEffect(() => {
+    fetchStreetCrimes(defaultAddress);
+  }, [])
 
   return (
     <>
