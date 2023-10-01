@@ -23,5 +23,6 @@ const getBoundingSquareLatLonPolygon = (coordinate: [number, number], squareLeng
 }
 
 export class CoordinateConversionService {
+  latMeanToMetrePerLatLon = latMeanToMetrePerLatLon
   getBoundingSquareLatLonPolygon = getBoundingSquareLatLonPolygon
 }

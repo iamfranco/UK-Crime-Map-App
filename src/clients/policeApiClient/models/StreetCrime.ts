@@ -24,8 +24,8 @@ export const makeRandomStreetCrime = () => ({
   category: 'category_' + Math.random(),
   location_type: 'ocation_type_' + Math.random(),
   location: {
-    latitude: 'latitude_' + Math.random(),
-    longitude: 'longitude_' + Math.random(),
+    latitude: Math.random().toString(),
+    longitude: Math.random().toString(),
     street: {
       id: Math.random(),
       name: 'street_name_' + Math.random()

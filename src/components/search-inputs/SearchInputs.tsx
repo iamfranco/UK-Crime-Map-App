@@ -1,20 +1,25 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { policeApiService } from '../../IoC/serviceProvider';
 import { AddressContext } from '../../contexts/AddressProvider';
+import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
 
 const SearchInputs = () => {
-  const {address, setAddress} = useContext(AddressContext);
+  const {defaultAddress, setAddress} = useContext(AddressContext);
+  const {setStreetCrimes} = useContext(StreetCrimesContext);
+  const [tempAddress, setTempAddress] = useState<string>(defaultAddress);
 
   const handleClick = async () => {
-    const [lat, lon] = address.split(',').map(x => parseFloat(x.trim()));
+    setAddress(tempAddress);
+    const [lat, lon] = tempAddress.split(',').map(x => parseFloat(x.trim()));
     const coordinate: [number, number]= [lat, lon];
-    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-01');
+    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-05');
+    setStreetCrimes(res);
     console.log(res);
   }
 
   return (
     <>
-      <input type="text" id='addressField' data-testid="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+      <input type="text" id='addressField' data-testid="address" value={tempAddress} onChange={(e) =>{setTempAddress(e.target.value)}}/>
       <div id='searchButton' data-testid="searchButton" onClick={handleClick}>Search</div>
     </>
   )
