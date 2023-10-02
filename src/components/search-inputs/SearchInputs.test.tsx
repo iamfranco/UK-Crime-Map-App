@@ -4,13 +4,13 @@ import SearchInputs from "./SearchInputs";
 import { makeRandomStreetCrime } from '../../clients/policeApiClient/models/StreetCrime';
 import { policeApiService } from '../../IoC/serviceProvider';
 import userEvent from '@testing-library/user-event';
-import AddressProvider from '../../contexts/AddressProvider';
+import AppContextProvider from '../../IoC/AppContextProvider';
 
 afterEach(cleanup)
 
 describe('SearchInputs', () => {
   it('on initial render, the input fields are set with initial values', () => {
-    render(<AddressProvider><SearchInputs/></AddressProvider>);
+    render(<AppContextProvider><SearchInputs/></AppContextProvider>);
 
     const addressField = screen.getByTestId<HTMLInputElement>('address');
 
@@ -19,7 +19,7 @@ describe('SearchInputs', () => {
 
   it('when input fields change values, and search button clicked, then calls policeApiService with updated SearchParams', async () => {
     //Arrange
-    render(<AddressProvider><SearchInputs/></AddressProvider>);
+    render(<AppContextProvider><SearchInputs/></AppContextProvider>);
     const addressField = screen.getByTestId<HTMLInputElement>('address');
     const searchButton = screen.getByTestId<HTMLDivElement>('searchButton');
 
@@ -34,6 +34,6 @@ describe('SearchInputs', () => {
     await userEvent.click(searchButton);
 
     //Assert
-    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith([0.01, 0.02], 1000, '2023-01')
+    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith([0.01, 0.02], 1000, '2023-04')
   })
 })

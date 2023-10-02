@@ -1,3 +1,5 @@
+import { NominatimApiClient } from "../../clients/nominatimApiClient/nominatimApiClient";
+
 const latMeanToMetrePerLatLon = (latMean: number) : {mPerLat: number, mPerLon: number} => {
   const latMeanRadians = latMean * Math.PI / 180;
   const mPerLat = 111132.92 - 559.82*Math.cos(2*latMeanRadians) + 1.175*Math.cos(4*latMeanRadians) - 0.0023*Math.cos(6*latMeanRadians);
@@ -23,6 +25,19 @@ const getBoundingSquareLatLonPolygon = (coordinate: [number, number], squareLeng
 }
 
 export class CoordinateConversionService {
+  constructor(private nominatimApiClient: NominatimApiClient) {}
+
   latMeanToMetrePerLatLon = latMeanToMetrePerLatLon
   getBoundingSquareLatLonPolygon = getBoundingSquareLatLonPolygon
+  
+  getLatLonFromAddress = async (address: string) : Promise<[number, number] | null> => {
+    const result = await this.nominatimApiClient.getPlaceDetail(address);
+
+    if (result == null) return null;
+
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+
+    return [lat, lon];
+  }
 }
