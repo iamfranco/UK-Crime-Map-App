@@ -8,11 +8,10 @@ import { StreetCrime } from '../../clients/policeApiClient/models/StreetCrime';
 import { crimeTypeColor } from './styles/crimeTypeColor';
 
 const MapViewer = () => {
-  const {address} = useContext(AddressContext);
-  const position = addressToPosition(address);
+  const {coordinate} = useContext(AddressContext);
 
   return (
-    <MapContainer center={position} zoom={16} scrollWheelZoom={true}>
+    <MapContainer center={coordinate} zoom={16} scrollWheelZoom={true}>
       <MapAnnotations />
     </MapContainer>
   )
@@ -22,19 +21,17 @@ export default MapViewer
 
 const MapAnnotations = () => {
   const map = useMap();
-  const {address} = useContext(AddressContext);
+  const {coordinate} = useContext(AddressContext);
   const {streetCrimes} = useContext(StreetCrimesContext);
 
   useEffect(() => {
-    const polygon = coordinateConversionService.getBoundingSquareLatLonPolygon(position, 1000);
+    const polygon = coordinateConversionService.getBoundingSquareLatLonPolygon(coordinate, 1000);
     map.fitBounds(polygon);
-  }, [address])
-
-  const position = addressToPosition(address);
+  }, [coordinate])
 
   const pathOptions = { color: '#ff005544' };
   const polygon: [number, number][] = coordinateConversionService
-    .getBoundingSquareLatLonPolygon(position, 1000);
+    .getBoundingSquareLatLonPolygon(coordinate, 1000);
 
   let streetCrimesGroupedByLatLon: StreetCrime[][] = [];
   for (const s of streetCrimes) {
@@ -85,7 +82,7 @@ const MapAnnotations = () => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <Polygon pathOptions={pathOptions} positions={polygon} />
-      <Marker position={position}>
+      <Marker position={coordinate}>
         <Popup>
           A pretty CSS3 popup. <br /> Easily customizable.
         </Popup>
@@ -94,5 +91,3 @@ const MapAnnotations = () => {
     </>
   )
 }
-
-const addressToPosition = (address: string) => address.split(',').map(x => parseFloat(x.trim())) as [number, number];

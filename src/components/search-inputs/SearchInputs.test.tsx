@@ -1,8 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from "vitest";
 import SearchInputs from "./SearchInputs";
 import { makeRandomStreetCrime } from '../../clients/policeApiClient/models/StreetCrime';
-import { policeApiService } from '../../IoC/serviceProvider';
+import { coordinateConversionService, policeApiService } from '../../IoC/serviceProvider';
 import userEvent from '@testing-library/user-event';
 import AppContextProvider from '../../IoC/AppContextProvider';
 
@@ -14,7 +14,7 @@ describe('SearchInputs', () => {
 
     const addressField = screen.getByTestId<HTMLInputElement>('address');
 
-    expect(addressField.value).toBe('53.483959, -2.244644');
+    expect(addressField.value).toBe('M2 5PD');
   })
 
   it('when input fields change values, and search button clicked, then calls policeApiService with updated SearchParams', async () => {
@@ -23,17 +23,27 @@ describe('SearchInputs', () => {
     const addressField = screen.getByTestId<HTMLInputElement>('address');
     const searchButton = screen.getByTestId<HTMLDivElement>('searchButton');
 
+    const address = 'some address';
+
+    const latLon = [Math.random(), Math.random()] as [number, number];
+    const getLatLonFromAddressSpy = vi
+      .spyOn(coordinateConversionService, 'getLatLonFromAddress')
+      .mockReturnValue(Promise.resolve(latLon));
+
     const streetCrimes = [1, 2, 3].map(() => makeRandomStreetCrime());
-    const getStreetCrimesAroundCoordinateSpy = vi.spyOn(policeApiService, 'getStreetCrimesAroundCoordinate');
-    getStreetCrimesAroundCoordinateSpy.mockReturnValue(Promise.resolve(streetCrimes));
+    const getStreetCrimesAroundCoordinateSpy = vi
+      .spyOn(policeApiService, 'getStreetCrimesAroundCoordinate')
+      .mockReturnValue(Promise.resolve(streetCrimes));
 
     //Act
     await userEvent.clear(addressField);
-    await userEvent.type(addressField, '0.01, 0.02');
-
-    await userEvent.click(searchButton);
+    await userEvent.type(addressField, address);
+    await act(async () => {
+      await userEvent.click(searchButton);
+    });
 
     //Assert
-    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith([0.01, 0.02], 1000, '2023-04')
+    expect(getLatLonFromAddressSpy).toHaveBeenCalledWith(address);
+    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith(latLon, 1000, '2023-04');
   })
 })
