@@ -5,6 +5,7 @@ import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
 import { AddressContext } from '../../contexts/AddressProvider';
 import './MapViewer.css'
 import { StreetCrime } from '../../clients/policeApiClient/models/StreetCrime';
+import { crimeTypeColor } from './styles/crimeTypeColor';
 
 const MapViewer = () => {
   const {address} = useContext(AddressContext);
@@ -50,13 +51,7 @@ const MapAnnotations = () => {
     streetCrimesGroupedByLatLon[matchingIndex].push(s);
   }
 
-  const dotRadius = 6;
-  const colorMapping : {[id: string] : string} = {
-    'public-order': '#555',
-    'shoplifting': '#f82',
-    'theft-from-the-person': '#f50',
-    'violent-crime': '#f00'
-  }
+  const dotRadius = 8;
 
   const circles = streetCrimesGroupedByLatLon.map(x => {
     const circlesGroup = x.map((y, index) => {
@@ -66,10 +61,17 @@ const MapAnnotations = () => {
       const {mPerLat, mPerLon} = coordinateConversionService.latMeanToMetrePerLatLon(lat);
 
       const position : [number, number] = [lat + positionOffset[1] / mPerLat, lon + positionOffset[0] / mPerLon]
-      const color = colorMapping[y.category];
+      const color = crimeTypeColor.find(c => c.itemArray.includes(y.category))?.color ?? '#000';
 
       return (
-        <Circle key={`${y.id}-${y.category}`} center={position} radius={dotRadius} color={color} fillOpacity={0.5} />
+        <Circle 
+          key={`${y.id}-${y.category}`} 
+          center={position} 
+          radius={dotRadius} 
+          color={'#000'}
+          weight={2}
+          fillColor={color}
+          fillOpacity={0.9} />
       )
     })
 

@@ -11,7 +11,7 @@ const SearchInputs = () => {
   const fetchStreetCrimes = async (address: string) => {
     const [lat, lon] = address.split(',').map(x => parseFloat(x.trim()));
     const coordinate: [number, number]= [lat, lon];
-    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-06');
+    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate, 1000, '2023-04');
     setStreetCrimes(res);
     console.log(res);
   }
