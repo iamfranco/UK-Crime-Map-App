@@ -51,7 +51,7 @@ const MapAnnotations = () => {
     streetCrimesGroupedByLatLon[matchingIndex].push(s);
   }
 
-  const dotRadius = 8;
+  const dotRadius = 6;
 
   const circles = streetCrimesGroupedByLatLon.map(x => {
     const circlesGroup = x.map((y, index) => {
@@ -69,7 +69,7 @@ const MapAnnotations = () => {
           center={position} 
           radius={dotRadius} 
           color={'#000'}
-          weight={2}
+          weight={1}
           fillColor={color}
           fillOpacity={0.9} />
       )
