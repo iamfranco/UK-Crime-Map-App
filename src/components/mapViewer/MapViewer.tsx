@@ -1,93 +1,97 @@
-import { Circle, MapContainer, Marker, Polygon, Popup, TileLayer, useMap } from 'react-leaflet'
-import { circleGroupUtils, coordinateConversionService } from '../../IoC/serviceProvider';
-import { useContext, useEffect } from 'react';
-import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
+import { useContext, useEffect, useRef } from 'react';
 import { AddressContext } from '../../contexts/AddressProvider';
-import './MapViewer.css'
+import './MapViewer.css';
+import * as maptalks from 'maptalks';
+import { coordinateConversionService } from '../../IoC/serviceProvider';
+import { StreetCrimesContext } from '../../contexts/StreetCrimesProvider';
 import { StreetCrime } from '../../clients/policeApiClient/models/StreetCrime';
-import { crimeTypeColor } from './styles/crimeTypeColor';
 
 const MapViewer = () => {
   const {coordinate} = useContext(AddressContext);
+  const {streetCrimes} = useContext(StreetCrimesContext);
+
+  const mapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const position = [coordinate[1], coordinate[0]];
+
+    const map = new maptalks.Map(mapRef.current!, {
+      center: position,
+      zoom: 15.5,
+      pitch: 60,
+      bearing: 40,
+      baseLayer: new maptalks.TileLayer('base', {
+        urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        subdomains: ["a","b","c","d"],
+        attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+      })
+    });
+
+    let coordinateBoundary = coordinateConversionService.getBoundingSquareLatLonPolygon(coordinate, 1000);
+    coordinateBoundary.push(coordinateBoundary[0]);
+
+    const boundary = new maptalks.LineString(coordinateBoundary.map((x) => [x[1], x[0]]), {
+      symbol: {
+        'lineColor' : 'black',
+        'lineWidth' : 1,
+      }
+    });
+
+    const point = new maptalks.Marker(position);
+
+    let streetCrimesGroupedByLatLon: StreetCrime[][] = [];
+    for (const s of streetCrimes) {
+      const matchingIndex = streetCrimesGroupedByLatLon.findIndex(x => 
+        x.length > 0 && 
+        x[0].location.latitude == s.location.latitude && 
+        x[0].location.longitude == s.location.longitude);
+
+      if (matchingIndex == -1) {
+        streetCrimesGroupedByLatLon.push([s]);
+        continue;
+      }
+
+      streetCrimesGroupedByLatLon[matchingIndex].push(s);
+    }
+
+    const buildingScaling = 1;
+    const buildings = streetCrimesGroupedByLatLon.map(group => {
+      const lat = parseFloat(group[0].location.latitude);
+      const lon = parseFloat(group[0].location.longitude);
+      const count = group.length;
+
+      let coordinateBoundary = coordinateConversionService.getBoundingSquareLatLonPolygon([lat, lon], 10);
+      coordinateBoundary.push(coordinateBoundary[0]);
+
+      return new maptalks.LineString(coordinateBoundary.map((x) => [x[1], x[0]]), {
+        symbol: {
+          'lineColor' : 'red',
+          'lineWidth' : 1,
+          'polygonFill' : 'red',
+        },
+        properties : {
+          'altitude' : coordinateBoundary.map(() => count * buildingScaling)
+        }
+      });
+    })
+
+    new maptalks.VectorLayer('vector', [point, ...buildings, boundary], { 
+      enableAltitude : true, 
+      drawAltitude : {
+        polygonFill : 'red',
+        polygonOpacity : 0.3,
+      }
+    }).addTo(map);
+
+    return () => {
+      map.remove();
+    };
+  }, [coordinate, streetCrimes]);
 
   return (
-    <MapContainer center={coordinate} zoom={16} scrollWheelZoom={true}>
-      <MapAnnotations />
-    </MapContainer>
+    <>
+      <div ref={mapRef} id="map" className="container"></div>
+    </>
   )
 }
 
 export default MapViewer
-
-const MapAnnotations = () => {
-  const map = useMap();
-  const {coordinate} = useContext(AddressContext);
-  const {streetCrimes} = useContext(StreetCrimesContext);
-
-  useEffect(() => {
-    const polygon = coordinateConversionService.getBoundingSquareLatLonPolygon(coordinate, 1000);
-    map.fitBounds(polygon);
-  }, [coordinate])
-
-  const pathOptions = { color: '#ff005544' };
-  const polygon: [number, number][] = coordinateConversionService
-    .getBoundingSquareLatLonPolygon(coordinate, 1000);
-
-  let streetCrimesGroupedByLatLon: StreetCrime[][] = [];
-  for (const s of streetCrimes) {
-    const matchingIndex = streetCrimesGroupedByLatLon.findIndex(x => 
-      x.length > 0 && 
-      x[0].location.latitude == s.location.latitude && 
-      x[0].location.longitude == s.location.longitude);
-
-    if (matchingIndex == -1) {
-      streetCrimesGroupedByLatLon.push([s]);
-      continue;
-    }
-
-    streetCrimesGroupedByLatLon[matchingIndex].push(s);
-  }
-
-  const dotRadius = 6;
-
-  const circles = streetCrimesGroupedByLatLon.map(x => {
-    const circlesGroup = x.map((y, index) => {
-      const lat = parseFloat(y.location.latitude);
-      const lon = parseFloat(y.location.longitude);
-      const positionOffset = circleGroupUtils.dotIndex2DotPosition(index, dotRadius);
-      const {mPerLat, mPerLon} = coordinateConversionService.latMeanToMetrePerLatLon(lat);
-
-      const position : [number, number] = [lat + positionOffset[1] / mPerLat, lon + positionOffset[0] / mPerLon]
-      const color = crimeTypeColor.find(c => c.itemArray.includes(y.category))?.color ?? '#000';
-
-      return (
-        <Circle 
-          key={`${y.id}-${y.category}`} 
-          center={position} 
-          radius={dotRadius} 
-          color={'#000'}
-          weight={1}
-          fillColor={color}
-          fillOpacity={0.9} />
-      )
-    })
-
-    return circlesGroup;
-  });
-  
-  return (
-    <>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Polygon pathOptions={pathOptions} positions={polygon} />
-      <Marker position={coordinate}>
-        <Popup>
-          A pretty CSS3 popup. <br /> Easily customizable.
-        </Popup>
-      </Marker>
-      {circles}
-    </>
-  )
-}

@@ -9,7 +9,7 @@ export const AddressContext = createContext<{
 }>(undefined as any);
 
 const AddressProvider = ({children} : PropsWithChildren) => {
-  const defaultAddress = 'M2 5PD';
+  const defaultAddress = 'NW1 2RT';
   const [address, setAddress] = useState<string>(defaultAddress);
   const [coordinate, setCoordinate] = useState<[number, number]>([0, 0]);
   

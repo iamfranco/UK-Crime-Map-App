@@ -8,11 +8,20 @@ const SearchInputs = () => {
   const {setStreetCrimes} = useContext(StreetCrimesContext);
   const [tempAddress, setTempAddress] = useState<string>(defaultAddress);
 
+  const dates = [
+    '2023-01', 
+    '2023-02', 
+    '2023-03', 
+    '2023-04', 
+    '2023-05', 
+    '2023-06', 
+    '2023-07'
+  ];
+
   const fetchStreetCrimes = async (address: string) => {
     const coordinate = await coordinateConversionService.getLatLonFromAddress(address);
-    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate!, 1000, '2023-04');
+    const res = await policeApiService.getStreetCrimesAroundCoordinate(coordinate!, 1000, dates);
     setStreetCrimes(res);
-    console.log(res);
   }
 
   const handleClick = async () => {

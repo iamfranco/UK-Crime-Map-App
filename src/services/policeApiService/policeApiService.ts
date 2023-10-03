@@ -7,10 +7,14 @@ export class PoliceApiService {
     private policeApiClient: PoliceApiClient, 
     private coordinateConversionService: CoordinateConversionService) {}
 
-  async getStreetCrimesAroundCoordinate(coordinate: [number, number], squareLengthMetres: number, date: string): Promise<StreetCrime[]> {
+  async getStreetCrimesAroundCoordinate(coordinate: [number, number], squareLengthMetres: number, dates: string[]): Promise<StreetCrime[]> {
     const polygon = this.coordinateConversionService.getBoundingSquareLatLonPolygon(coordinate, squareLengthMetres);
 
-    const streetCrimes = await this.policeApiClient.getStreetCrimes(polygon, date);
-    return streetCrimes;
+    const apiCalls = dates.map(date => {
+      return this.policeApiClient.getStreetCrimes(polygon, date);
+    })
+
+    const streetCrimes = await Promise.all(apiCalls);
+    return streetCrimes.flat();
   }
 }

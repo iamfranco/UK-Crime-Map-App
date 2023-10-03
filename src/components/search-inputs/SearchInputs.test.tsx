@@ -14,7 +14,7 @@ describe('SearchInputs', () => {
 
     const addressField = screen.getByTestId<HTMLInputElement>('address');
 
-    expect(addressField.value).toBe('M2 5PD');
+    expect(addressField.value).toBe('NW1 2RT');
   })
 
   it('when input fields change values, and search button clicked, then calls policeApiService with updated SearchParams', async () => {
@@ -42,8 +42,18 @@ describe('SearchInputs', () => {
       await userEvent.click(searchButton);
     });
 
+    const dates = [
+      '2023-01', 
+      '2023-02', 
+      '2023-03', 
+      '2023-04', 
+      '2023-05', 
+      '2023-06', 
+      '2023-07'
+    ];
+
     //Assert
     expect(getLatLonFromAddressSpy).toHaveBeenCalledWith(address);
-    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith(latLon, 1000, '2023-04');
+    expect(getStreetCrimesAroundCoordinateSpy).toHaveBeenCalledWith(latLon, 1000, dates);
   })
 })
